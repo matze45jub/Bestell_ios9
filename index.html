@@ -360,6 +360,27 @@
     ]
   };
 
+  function generateProductButtons() {
+    const essenButtonsContainer = document.getElementById("essenButtons");
+    const getraenkeButtonsContainer = document.getElementById("getraenkeButtons");
+
+    productData.essen.forEach(product => {
+      const button = document.createElement("button");
+      button.classList.add("product-button", "essen-button");
+      button.innerText = `${product.name} - €${product.price}`;
+      button.onclick = () => addToOrder(product, 'essen');
+      essenButtonsContainer.appendChild(button);
+    });
+
+    productData.getraenke.forEach(product => {
+      const button = document.createElement("button");
+      button.classList.add("product-button", "getraenke-button");
+      button.innerText = `${product.name} - €${product.price}`;
+      button.onclick = () => addToOrder(product, 'getraenke');
+      getraenkeButtonsContainer.appendChild(button);
+    });
+  }
+
   function addToOrder(product, category) {
     order.push(product);
     updateOrderTable();
@@ -462,6 +483,8 @@
     updateOrderTable();
     alert("Neue Bestellung gestartet.");
   }
+
+  generateProductButtons();
 </script>
 </body>
 </html>
