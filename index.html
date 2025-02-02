@@ -349,16 +349,40 @@
   let totalAmount = 0;
   let totalPfandAmount = 0;
 
-  const productData = {
-    essen: [
-      { name: 'Bratwurst', price: 5.00, pfand: 0 },
-      { name: 'Pommes', price: 3.00, pfand: 0 }
-    ],
-    getraenke: [
-      { name: 'Bier', price: 2.50, pfand: 1 },
-      { name: 'Cola', price: 2.00, pfand: 2 }
-    ]
-  };
+ const products = [
+      { name: "Obatzter", price: 3.2, category: "essen", deposit: 0 },
+      { name: "Bratwurst", price: 3.5, category: "essen", deposit: 0 },
+      { name: "Weißwurst", price: 4.2, category: "essen", deposit: 5 },
+      { name: "Hähnchen", price: 6.8, category: "essen", deposit: 5 },
+      { name: "Penne mit Linsenbolognese", price: 7.4, category: "essen", deposit: 5 },
+      { name: "gebackener Camenbert", price: 4.2, category: "essen", deposit: 5 },
+      { name: "Spinat-/Semmelknödel", price: 4.8, category: "essen", deposit: 5 },
+      { name: "Hochzeitsessen", price: 7.2, category: "essen", deposit: 5 },
+      { name: "Gemüsenudeln", price: 5.5, category: "essen", deposit: 5 },
+      { name: "Kartoffelpuffer", price: 5.2, category: "essen", deposit: 5 },
+      { name: "Currywurst", price: 4.5, category: "essen", deposit: 0 },
+      { name: "VeggieBurger", price: 4.2, category: "essen", deposit: 0 },
+      { name: "Hamburger", price: 4.2, category: "essen", deposit: 0 },
+      { name: "Cheeseburger", price: 4.6, category: "essen", deposit: 0 },
+      { name: "Falafel mit Dip", price: 6.4, category: "essen", deposit: 5.0 },
+      { name: "Ochs vom Spieß", price: 9.2, category: "essen", deposit: 5.0 },
+      { name: "Pommes", price: 2.5, category: "essen", deposit: 0 },
+      { name: "Salat", price: 4.0, category: "essen", deposit: 5.0 },
+      { name: "Schnitzel", price: 8.5, category: "essen", deposit: 5.0 },
+      { name: "Jubiläums-Bier", price: 5.2, category: "getraenke", deposit: 5 },
+      { name: "Alkoholfreies Bier", price: 3.6, category: "getraenke", deposit: 5.0 },
+      { name: "Bier", price: 4.8, category: "getraenke", deposit: 5 },
+      { name: "Alkoholfreies Hefe", price: 3.6, category: "getraenke", deposit: 5.0 },
+      { name: "Hefeweizen", price: 3.8, category: "getraenke", deposit: 5.0 },
+      { name: "Radler", price: 3.6, category: "getraenke", deposit: 5.0 },
+      { name: "Spezi", price: 2.5, category: "getraenke", deposit: 1.0 },
+      { name: "Apfelschorle", price: 2.0, category: "getraenke", deposit: 1.0 },
+      { name: "Cola", price: 3.0, category: "getraenke", deposit: 1.0 },
+      { name: "Fanta", price: 3.0, category: "getraenke", deposit: 1.0 },
+      { name: "Wasser spritzig", price: 2.0, category: "getraenke", deposit: 1.0 },
+      { name: "Wasser still", price: 2.0, category: "getraenke", deposit: 1.0 }
+    ];
+
 
   function generateProductButtons() {
     const essenButtonsContainer = document.getElementById("essenButtons");
