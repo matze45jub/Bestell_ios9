@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JBO feiert mit Freunden</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+    }
+
+    .footer-message i {
+      position: left;
+      margin-right: 5px;
+      top: 0;
+      left: 0;
+      font-size: 14px;
+      color: #101A4B;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .header, .header *,
+      #orderTable, #orderTable * {
+        visibility: visible;
+      }
+      .header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        text-align: center;
+      }
+
+      .info-text {
+        border: 3px solid #ccc;
+        background-color: #f0f0f0;
+        top: 60px;
+        padding: 5px;
+      }
+
+      h3 {
+        text-align: center;
+      }
+
+      #orderTable {
+        position: relative;
+        top: 100px;
+        left: 0;
+        width: 100%;
+        page-break-inside: avoid;
+      }
+      #orderTable th:last-child,
+      #orderTable td:last-child {
+        display: none;
+      }
+
+      .product-buttons-container,
+      .button-container,
+      #pfandModal {
+        display: none;
+      }
+    }
+
+    .header {
+      position: relative;
+      text-align: center;
+      padding-top: 50px;
+    }
+
+    .header img {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 90px;
+      height: auto;
+    }
+
+    .header h1 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+      color: #101A4B;
+    }
+
+    .header .untertitel {
+      font-size: 16px;
+      margin: 0 0 10px 0;
+    }
+
+    .header .info-text {
+      margin: 0;
+      font-weight: bold;
+      font-size: 16px;
+      border: 4px solid #ccc;
+      background-color: #f0f0f0;
+      padding: 10px;
+    }
+
+    h3 {
+      text-align: center;
+    }
+
+    .product-buttons-container {
+      margin-bottom: 20px;
+    }
+
+    .category-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #101A4B;
+    }
+
+    .product-buttons-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .product-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .essen-button {
+      background-color: #E74C3C;
+      color: #FFFFFF;
+    }
+
+    .getraenke-button {
+      background-color: #377EBF;
+      color: #FFFFFF;
+    }
+
+    #orderTable, #orderTable th, #orderTable td {
+      border: 1px solid #ccc;
+      border-collapse: collapse;
+      padding: 10px;
+    }
+
+    #orderTable th {
+      background-color: #f8f8f8;
+    }
+
+    .order-summary {
+      margin-top: 20px;
+      border-top: 2px solid #ccc;
+      padding-top: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .button-container button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #E74C3C;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .button-container button:hover {
+      background-color: #C0392B;
+    }
+
+    .pfand-button {
+      background-color: #C0392B;
+      color: white;
+    }
+
+    #pfandModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    #pfandModalContent {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+    }
+
+    .pfand-item {
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .product-buttons-row {
+        flex-direction: column;
+        gap: 5px;
+      }
+    }
+
+    .quantity-input {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 80px;
+    }
+
+    .quantity-input button {
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .quantity-input input {
+      width: 40px;
+      text-align: center;
+      border: 1px solid #ccc;
+      padding: 5px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <img src="/Users/wundi-imac2/Desktop/Logo.PNG" alt="Logo">
+  <h1>45 Jahre Jugendblasorchester Kürnach</h1>
+  <p class="untertitel">🎉 Schön, dass Du da bist und mit uns feierst 🎊! </p>
+  <p class="info-text">🍺 Bitte nimm Deinen Ausdruck mit zur jeweiligen Ausgabetheke 🍔! </p>
+</div>
+
+<div id="productButtons" class="product-buttons-container">
+  <div>
+    <h3 class="category-title"><i class="fas fa-hamburger"></i> Essen</h3>
+    <div class="product-buttons-row" id="essenButtons"></div>
+  </div>
+  <div>
+    <h3 class="category-title"><i class="fas fa-glass-cheers"></i> Getränke</h3>
+    <div class="product-buttons-row" id="getraenkeButtons"></div>
+  </div>
+</div>
+
+<h2 style="color: #101A4B;">Bestellung</h2>
+<table id="orderTable">
+  <thead>
+    <tr>
+      <th>Produkt</th>
+      <th>Menge</th>
+      <th>Einzelpreis (€)</th>
+      <th>Einzelpfand (€)</th>
+      <th>Gesamtpreis (€)</th>
+      <th>Gesamtpfand (€)</th>
+      <th>Gesamt (€)</th>
+      <th>Aktionen</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+<h3>
+  Gesamtsumme (€): <span id="totalSum">0.00</span>€
+  | Pfandrückgabe: <span id="pfandReturnAmount">0.00</span>€ 
+  | Zu zahlender Betrag: <span id="amountToPay">0.00</span>€
+  | Zahlung: <span id="paymentAmount">0.00</span>€
+  | Rückgeld: <span id="changeAmount">0.00</span>€
+</h3>
+
+<div class="button-container">
+  <button id="newCustomerBtn" onclick="startNewOrder()">Neuer Kunde</button>
+  <button id="pfandReturnBtn" class="pfand-button" onclick="openPfandModal()">Pfandrückgabe</button>
+  <button id="paymentBtn" onclick="handlePayment()">Zahlung</button>
+  <button id="printReceiptBtn" onclick="printReceipt()">Drucke Rechnung</button>
+  <button id="completeOrderBtn" onclick="completeOrder()">Bestellung abschließen</button>
+</div>
+
+<!-- Pfandmodal -->
+<div id="pfandModal">
+  <div id="pfandModalContent">
+    <h3>Pfandrückgabe</h3> 
+    <div class="pfand-item">
+      <label for="bottleQuantity">Flasche 🍾 (1€):</label>
+      <div class="quantity-input">
+        <button onclick="updatePfandQuantity('bottle', -1)">-</button>
+        <input type="number" id="bottleQuantity" value="0" readonly>
+        <button onclick="updatePfandQuantity('bottle', 1)">+</button>
+      </div>
+    </div>
+    <div class="pfand-item">
+      <label for="glassQuantity">Glas 🍷 (2€):</label>
+      <div class="quantity-input">
+        <button onclick="updatePfandQuantity('glass', -1)">-</button>
+        <input type="number" id="glassQuantity" value="0" readonly>
+        <button onclick="updatePfandQuantity('glass', 1)">+</button>
+      </div>
+    </div>
+    <div class="pfand-item">
+      <label for="jugQuantity">Krug 🍺 (5€):</label>
+      <div class="quantity-input">
+        <button onclick="updatePfandQuantity('jug', -1)">-</button>
+        <input type="number" id="jugQuantity" value="0" readonly>
+        <button onclick="updatePfandQuantity('jug', 1)">+</button>
+      </div>
+    </div>
+    <div class="pfand-item">
+      <label for="cupQuantity">Becher 🥤 (2€):</label>
+      <div class="quantity-input">
+        <button onclick="updatePfandQuantity('cup', -1)">-</button>
+        <input type="number" id="cupQuantity" value="0" readonly>
+        <button onclick="updatePfandQuantity('cup', 1)">+</button>
+      </div>
+    </div>
+    <div class="pfand-item">
+      <label for="dishQuantity">Teller 🍽 (5€):</label>
+      <div class="quantity-input">
+        <button onclick="updatePfandQuantity('dish', -1)">-</button>
+        <input type="number" id="dishQuantity" value="0" readonly>
+        <button onclick="updatePfandQuantity('dish', 1)">+</button>
+      </div>
+    </div>
+    <button onclick="calculatePfandReturn()">Berechnen</button>
+    <button onclick="closePfandModal()">Schließen</button>
+  </div>
+</div>
+
+<script>
+  let order = [];
+  let totalAmount = 0;
+  let totalPfandAmount = 0;
+
+  const productData = {
+    essen: [
+      { name: 'Bratwurst', price: 5.00, pfand: 0 },
+      { name: 'Pommes', price: 3.00, pfand: 0 }
+    ],
+    getraenke: [
+      { name: 'Bier', price: 2.50, pfand: 1 },
+      { name: 'Cola', price: 2.00, pfand: 2 }
+    ]
+  };
+
+  function addToOrder(product, category) {
+    order.push(product);
+    updateOrderTable();
+  }
+
+  function updateOrderTable() {
+    const tableBody = document.querySelector("#orderTable tbody");
+    tableBody.innerHTML = ''; // Clear previous entries
+
+    totalAmount = 0;
+    totalPfandAmount = 0;
+
+    order.forEach((product, index) => {
+      let totalPrice = product.price;
+      let totalPfand = product.pfand;
+      let total = totalPrice + totalPfand;
+
+      totalAmount += totalPrice;
+      totalPfandAmount += totalPfand;
+
+      let row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${product.name}</td>
+        <td>1</td>
+        <td>${product.price}</td>
+        <td>${product.pfand}</td>
+        <td>${totalPrice.toFixed(2)}</td>
+        <td>${totalPfand.toFixed(2)}</td>
+        <td>${total.toFixed(2)}</td>
+        <td><button onclick="removeFromOrder(${index})">Entfernen</button></td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+    document.getElementById("totalSum").textContent = totalAmount.toFixed(2);
+    document.getElementById("pfandReturnAmount").textContent = totalPfandAmount.toFixed(2);
+    document.getElementById("amountToPay").textContent = (totalAmount - totalPfandAmount).toFixed(2);
+  }
+
+  function removeFromOrder(index) {
+    order.splice(index, 1);
+    updateOrderTable();
+  }
+
+  function openPfandModal() {
+    document.getElementById("pfandModal").style.display = 'flex';
+  }
+
+  function closePfandModal() {
+    document.getElementById("pfandModal").style.display = 'none';
+  }
+
+  function updatePfandQuantity(type, amount) {
+    let element = document.getElementById(type + "Quantity");
+    let newValue = parseInt(element.value) + amount;
+    if (newValue >= 0) {
+      element.value = newValue;
+    }
+  }
+
+  function calculatePfandReturn() {
+    let pfandReturnAmount = 0;
+    pfandReturnAmount += parseInt(document.getElementById("bottleQuantity").value) * 1;
+    pfandReturnAmount += parseInt(document.getElementById("glassQuantity").value) * 2;
+    pfandReturnAmount += parseInt(document.getElementById("jugQuantity").value) * 5;
+    pfandReturnAmount += parseInt(document.getElementById("cupQuantity").value) * 2;
+    pfandReturnAmount += parseInt(document.getElementById("dishQuantity").value) * 5;
+
+    document.getElementById("pfandReturnAmount").textContent = pfandReturnAmount.toFixed(2);
+
+    let totalAmountToPay = parseFloat(document.getElementById("totalSum").textContent) - pfandReturnAmount;
+    document.getElementById("amountToPay").textContent = totalAmountToPay.toFixed(2);
+  }
+
+  function handlePayment() {
+    const amountToPay = parseFloat(document.getElementById("amountToPay").textContent);
+    let paymentAmount = parseFloat(prompt("Gib den Betrag ein, den du bezahlen möchtest:"));
+
+    if (paymentAmount >= amountToPay) {
+      let changeAmount = paymentAmount - amountToPay;
+      document.getElementById("paymentAmount").textContent = paymentAmount.toFixed(2);
+      document.getElementById("changeAmount").textContent = changeAmount.toFixed(2);
+      alert("Zahlung erfolgreich! Dein Wechselgeld beträgt: " + changeAmount.toFixed(2) + "€");
+    } else {
+      alert("Der Betrag ist zu niedrig. Bitte überprüfe deinen Betrag.");
+    }
+  }
+
+  function printReceipt() {
+    window.print();
+  }
+
+  function completeOrder() {
+    alert("Deine Bestellung wurde abgeschlossen!");
+    startNewOrder();
+  }
+
+  function startNewOrder() {
+    order = [];
+    updateOrderTable();
+    alert("Neue Bestellung gestartet.");
+  }
+</script>
+</body>
+</html>
