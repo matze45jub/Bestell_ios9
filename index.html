@@ -381,44 +381,54 @@
     });
   }
 
-  function addToOrder(product, category) {
-    order.push(product);
-    updateOrderTable();
+function addToOrder(product, category) {
+  // Überprüfen, ob das Produkt bereits in der Bestellung ist
+  const existingProduct = order.find(item => item.name === product.name);
+
+  if (existingProduct) {
+    // Wenn das Produkt schon existiert, erhöhe die Menge
+    existingProduct.quantity += 1;
+  } else {
+    // Wenn das Produkt noch nicht in der Bestellung ist, füge es hinzu
+    order.push({ ...product, quantity: 1 });
   }
 
-  function updateOrderTable() {
-    const tableBody = document.querySelector("#orderTable tbody");
-    tableBody.innerHTML = ''; // Clear previous entries
+  updateOrderTable();
+}
 
-    totalAmount = 0;
-    totalPfandAmount = 0;
+function updateOrderTable() {
+  const tableBody = document.querySelector("#orderTable tbody");
+  tableBody.innerHTML = ''; // Clear previous entries
 
-    order.forEach((product, index) => {
-      let totalPrice = product.price;
-      let totalPfand = product.pfand;
-      let total = totalPrice + totalPfand;
+  totalAmount = 0;
+  totalPfandAmount = 0;
 
-      totalAmount += totalPrice;
-      totalPfandAmount += totalPfand;
+  order.forEach((product, index) => {
+    let totalPrice = product.price * product.quantity;
+    let totalPfand = product.pfand * product.quantity;
+    let total = totalPrice + totalPfand;
 
-      let row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${product.name}</td>
-        <td>1</td>
-        <td>${product.price}</td>
-        <td>${product.pfand}</td>
-        <td>${totalPrice.toFixed(2)}</td>
-        <td>${totalPfand.toFixed(2)}</td>
-        <td>${total.toFixed(2)}</td>
-        <td><button onclick="removeFromOrder(${index})">Entfernen</button></td>
-      `;
-      tableBody.appendChild(row);
-    });
+    totalAmount += totalPrice;
+    totalPfandAmount += totalPfand;
 
-    document.getElementById("totalSum").textContent = totalAmount.toFixed(2);
-    document.getElementById("pfandReturnAmount").textContent = totalPfandAmount.toFixed(2);
-    document.getElementById("amountToPay").textContent = (totalAmount - totalPfandAmount).toFixed(2);
-  }
+    let row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${product.name}</td>
+      <td>${product.quantity}</td>
+      <td>${product.price}</td>
+      <td>${product.pfand}</td>
+      <td>${totalPrice.toFixed(2)}</td>
+      <td>${totalPfand.toFixed(2)}</td>
+      <td>${total.toFixed(2)}</td>
+      <td><button onclick="removeFromOrder(${index})">Entfernen</button></td>
+    `;
+    tableBody.appendChild(row);
+  });
+
+  document.getElementById("totalSum").textContent = totalAmount.toFixed(2);
+  document.getElementById("pfandReturnAmount").textContent = totalPfandAmount.toFixed(2);
+  document.getElementById("amountToPay").textContent = (totalAmount - totalPfandAmount).toFixed(2);
+}
 
   function removeFromOrder(index) {
     order.splice(index, 1);
