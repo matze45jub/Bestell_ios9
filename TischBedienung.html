@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gastro Bedienung</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .table-container { margin-bottom: 20px; display: none; padding: 10px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+        .table-container.active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; vertical-align: middle; }
+        th { background-color: #f4f4f4; }
+        .paid { background-color: lightgreen; }
+        .quantity-control { display: flex; flex-direction: column; align-items: center; }
+        .quantity-control button { width: 25px; height: 25px; margin: 2px 0; }
+        input[type='number'] { width: 40px; text-align: center; }
+        input[type='text'] { width: 100px; }
+        .draggable { cursor: grab; background-color: #f0f0f0; padding: 10px; border-radius: 5px; }
+        .dropzone { width: 120px; height: 120px; border: 2px dashed #999; display: inline-block; margin: 10px; text-align: center; line-height: 120px; }
+        .table-header { font-weight: bold; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <h1>Bestellaufnahme</h1>
+    
+    <p>Wählen Sie einen Tisch:</p>
+    <select id="table-select">
+    </select>
+
+    <div id="tables"></div>
+    <button onclick="showPaymentSelection()">Abrechnung durchführen</button>
+    
+    <h2>Rechnung</h2>
+    <div id="bill"></div>
+
+    <h2>Tischübersicht</h2>
+    <div id="table-layout"></div>
+
+    <script>
+        const tables = 5;
+        const persons = 6;
+        const prices = { "Wasser": 3.5, "Weinschorle": 3.8, "Bier": 3.6, "Cola": 2.5, "Hefeweizen": 3.8, "Schoppen Silvaner": 4.2, "Schoppen Müller-Thurgau": 3.8, "Bratwurst mit Kraut": 7.2, "Bratwurst gezwickt": 3.5, "Obatzer": 4.5, "Metstange": 3.2 };
+        let paidStatus = {};  // Speichert, welche Person bezahlt hat
+        let orders = {}; // Bestellungen der Personen
+
+        function createTables() {
+            const container = document.getElementById("tables");
+            const tableSelect = document.getElementById("table-select");
+            
+            for (let t = 1; t <= tables; t++) {
+                let option = document.createElement("option");
+                option.value = t;
+                option.innerText = `Tisch ${t}`;
+                tableSelect.appendChild(option);
+                
+                let tableDiv = document.createElement("div");
+                tableDiv.classList.add("table-container");
+                tableDiv.id = `table-${t}`;
+                tableDiv.innerHTML = `<h2 class="table-header">Tisch ${t}</h2>`;
+                
+                let table = document.createElement("table");
+                let headerRow = `<tr><th>Person</th><th>Notiz</th>`;
+                Object.keys(prices).forEach(item => {
+                    headerRow += `<th>${item}<br><small>(${prices[item].toFixed(2)} €)</small></th>`;
+                });
+                headerRow += `</tr>`;
+                table.innerHTML = headerRow;
+                
+                for (let p = 1; p <= persons; p++) {
+                    let row = `<tr id='person-${t}-${p}'>
+                        <td>Person ${p}</td>
+                        <td><input type='text' placeholder='Notiz' data-table='${t}' data-person='${p}'></td>`;
+                    Object.keys(prices).forEach((item, index) => {
+                        row += `<td>
+                                    <div class='quantity-control'>
+                                        <button class="plus" onclick='changeQuantity(${t}, ${p}, "${item}", 1)'>+</button>
+                                        <input type='number' min='0' value='0' data-item='${item}' data-table='${t}' data-person='${p}' readonly>
+                                        <button class="minus" onclick='changeQuantity(${t}, ${p}, "${item}", -1)'>-</button>
+                                    </div>
+                                </td>`;
+                    });
+                    row += `</tr>`;
+                    table.innerHTML += row;
+                }
+                tableDiv.appendChild(table);
+                container.appendChild(tableDiv);
+            }
+        }
+
+        function toggleTableVisibility() {
+            const tableSelect = document.getElementById("table-select");
+            const selectedTable = tableSelect.value;
+            
+            const allTables = document.querySelectorAll(".table-container");
+            allTables.forEach(table => table.classList.remove("active"));
+            
+            const table = document.getElementById(`table-${selectedTable}`);
+            if (table) {
+                table.classList.add("active");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const tableSelect = document.getElementById("table-select");
+            tableSelect.addEventListener("change", toggleTableVisibility);
+            
+            createTables();
+        });
+
+        function changeQuantity(table, person, item, change) {
+            const input = document.querySelector(`input[data-table='${table}'][data-person='${person}'][data-item='${item}']`);
+            let currentValue = parseInt(input.value, 10) || 0;
+            currentValue = Math.max(0, currentValue + change);
+            input.value = currentValue;
+
+            if (!orders[table]) {
+                orders[table] = {};
+            }
+            if (!orders[table][person]) {
+                orders[table][person] = {};
+            }
+            orders[table][person][item] = currentValue;
+        }
+
+        function showPaymentSelection() {
+            const tableSelect = document.getElementById("table-select");
+            const selectedTable = tableSelect.value;
+            const tableOrders = orders[selectedTable];
+            const billDiv = document.getElementById("bill");
+            billDiv.innerHTML = ''; // Reset der Anzeige
+            
+            let paymentForm = `<h3>Tisch ${selectedTable} - Wählen Sie, wer bezahlt</h3>`;
+            let totalBill = 0;
+            let personDetails = '';
+            
+            for (let p = 1; p <= persons; p++) {
+                const personOrder = tableOrders[p];
+                if (personOrder) {
+                    let personTotal = 0;
+                    let orderDetails = [];
+                    Object.keys(personOrder).forEach(item => {
+                        const quantity = personOrder[item];
+                        if (quantity > 0) {
+                            const itemTotal = prices[item] * quantity;
+                            personTotal += itemTotal;
+                            orderDetails.push(`${item}: ${quantity} x ${prices[item].toFixed(2)} €`);
+                        }
+                    });
+
+                    paymentForm += `
+                        <div>
+                            <label>
+                                <input type="checkbox" id="pay-${selectedTable}-${p}" onchange="markPaid(${selectedTable}, ${p})">
+                                Person ${p} - Gesamt: ${personTotal.toFixed(2)} € 
+                                <span style="font-style: italic; color: #555;">(Bestellung: ${orderDetails.join(", ")})</span>
+                            </label>
+                        </div>`;
+                    totalBill += personTotal;
+                }
+            }
+
+            billDiv.innerHTML = paymentForm;
+            billDiv.innerHTML += `<hr><b>Gesamtbetrag für Tisch ${selectedTable}: ${totalBill.toFixed(2)} €</b>`;
+        }
+
+        function markPaid(table, person) {
+            const personRow = document.getElementById(`person-${table}-${person}`);
+            const checkbox = document.getElementById(`pay-${table}-${person}`);
+            
+            if (checkbox.checked) {
+                personRow.classList.add("paid");  // Markiert die Person als bezahlt
+                paidStatus[`${table}-${person}`] = true;
+            } else {
+                personRow.classList.remove("paid");  // Entfernt die Markierung, wenn abgewählt
+                paidStatus[`${table}-${person}`] = false;
+            }
+        }
+    </script>
+</body>
+</html>
