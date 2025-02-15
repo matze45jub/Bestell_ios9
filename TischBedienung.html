@@ -6,27 +6,25 @@
     <title>Gastro Bedienung</title>
     <style>
         body { font-family: Arial, sans-serif; }
-        .table-container { margin-bottom: 20px; display: none; padding: 10px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-        .table-container.active { display: block; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; vertical-align: middle; }
-        th { background-color: #f4f4f4; }
-        .paid { background-color: lightgreen; }
-        .quantity-control { display: flex; flex-direction: column; align-items: center; }
-        .quantity-control button { width: 25px; height: 25px; margin: 2px 0; }
-        input[type='number'] { width: 40px; text-align: center; }
-        input[type='text'] { width: 100px; }
-        .draggable { cursor: grab; background-color: #f0f0f0; padding: 10px; border-radius: 5px; }
-        .dropzone { width: 120px; height: 120px; border: 2px dashed #999; display: inline-block; margin: 10px; text-align: center; line-height: 120px; }
-        .table-header { font-weight: bold; margin-bottom: 15px; }
+    .table-container { margin-bottom: 20px; display: none; padding: 10px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+    .table-container.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; } /* Kleinere Schriftgröße */
+    th, td { border: 1px solid #ddd; padding: 6px; text-align: center; vertical-align: middle; }
+    th { background-color: #f4f4f4; }
+    .paid { background-color: lightgreen; }
+    .quantity-control { display: flex; flex-direction: column; align-items: center; }
+    .quantity-control button { width: 20px; height: 20px; margin: 2px 0; font-size: 12px; } /* Kleinere Buttons */
+    input[type='number'] { width: 30px; text-align: center; font-size: 14px; } /* Kleinere Eingabefelder */
+    input[type='text'] { width: 80px; font-size: 14px; } /* Kleinere Notizfelder */
+    .table-header { font-weight: bold; margin-bottom: 15px; font-size: 16px; } /* Kleinere Header-Schriftgröße */
+    label { font-size: 12px; } /* Kleinere Schrift für die Person-Checkbox */
     </style>
 </head>
 <body>
     <h1>Bestellaufnahme</h1>
     
     <p>Wählen Sie einen Tisch:</p>
-    <select id="table-select">
-    </select>
+    <div id="table-checkboxes"></div>
 
     <div id="tables"></div>
     <button onclick="showPaymentSelection()">Abrechnung durchführen</button>
@@ -46,14 +44,8 @@
 
         function createTables() {
             const container = document.getElementById("tables");
-            const tableSelect = document.getElementById("table-select");
             
             for (let t = 1; t <= tables; t++) {
-                let option = document.createElement("option");
-                option.value = t;
-                option.innerText = `Tisch ${t}`;
-                tableSelect.appendChild(option);
-                
                 let tableDiv = document.createElement("div");
                 tableDiv.classList.add("table-container");
                 tableDiv.id = `table-${t}`;
@@ -88,25 +80,33 @@
             }
         }
 
-        function toggleTableVisibility() {
-            const tableSelect = document.getElementById("table-select");
-            const selectedTable = tableSelect.value;
-            
-            const allTables = document.querySelectorAll(".table-container");
-            allTables.forEach(table => table.classList.remove("active"));
-            
-            const table = document.getElementById(`table-${selectedTable}`);
-            if (table) {
-                table.classList.add("active");
+        function toggleTableVisibility(table) {
+            const selectedTable = document.getElementById(`table-${table}`);
+            if (selectedTable) {
+                selectedTable.classList.toggle("active");
             }
         }
 
         document.addEventListener("DOMContentLoaded", function() {
-            const tableSelect = document.getElementById("table-select");
-            tableSelect.addEventListener("change", toggleTableVisibility);
+            const tableCheckboxes = document.getElementById("table-checkboxes");
             
+            for (let t = 1; t <= tables; t++) {
+                let checkboxContainer = document.createElement("div");
+                checkboxContainer.innerHTML = `<label><input type="checkbox" id="checkbox-${t}" onclick="handleTableCheckbox(${t})"> Tisch ${t}</label>`;
+                tableCheckboxes.appendChild(checkboxContainer);
+            }
+
             createTables();
         });
+
+        function handleTableCheckbox(table) {
+            const checkbox = document.getElementById(`checkbox-${table}`);
+            if (checkbox.checked) {
+                toggleTableVisibility(table); // Wenn der Tisch ausgewählt ist, wird der Inhalt angezeigt
+            } else {
+                toggleTableVisibility(table); // Wenn der Tisch abgewählt wird, wird der Inhalt ausgeblendet
+            }
+        }
 
         function changeQuantity(table, person, item, change) {
             const input = document.querySelector(`input[data-table='${table}'][data-person='${person}'][data-item='${item}']`);
@@ -124,44 +124,46 @@
         }
 
         function showPaymentSelection() {
-            const tableSelect = document.getElementById("table-select");
-            const selectedTable = tableSelect.value;
-            const tableOrders = orders[selectedTable];
-            const billDiv = document.getElementById("bill");
-            billDiv.innerHTML = ''; // Reset der Anzeige
-            
-            let paymentForm = `<h3>Tisch ${selectedTable} - Wählen Sie, wer bezahlt</h3>`;
-            let totalBill = 0;
-            let personDetails = '';
-            
-            for (let p = 1; p <= persons; p++) {
-                const personOrder = tableOrders[p];
-                if (personOrder) {
-                    let personTotal = 0;
-                    let orderDetails = [];
-                    Object.keys(personOrder).forEach(item => {
-                        const quantity = personOrder[item];
-                        if (quantity > 0) {
-                            const itemTotal = prices[item] * quantity;
-                            personTotal += itemTotal;
-                            orderDetails.push(`${item}: ${quantity} x ${prices[item].toFixed(2)} €`);
-                        }
-                    });
+            const selectedTable = Array.from(document.querySelectorAll("input[type='checkbox']:checked")).map(el => el.id.split('-')[1]);
+            if (selectedTable.length > 0) {
+                const table = selectedTable[0]; // Nur den ersten ausgewählten Tisch für die Abrechnung anzeigen
+                const tableOrders = orders[table];
+                const billDiv = document.getElementById("bill");
+                billDiv.innerHTML = ''; // Reset der Anzeige
+                
+                let paymentForm = `<h3>Tisch ${table} - Wählen Sie, wer bezahlt</h3>`;
+                let totalBill = 0;
+                let personDetails = '';
+                
+                for (let p = 1; p <= persons; p++) {
+                    const personOrder = tableOrders[p];
+                    if (personOrder) {
+                        let personTotal = 0;
+                        let orderDetails = [];
+                        Object.keys(personOrder).forEach(item => {
+                            const quantity = personOrder[item];
+                            if (quantity > 0) {
+                                const itemTotal = prices[item] * quantity;
+                                personTotal += itemTotal;
+                                orderDetails.push(`${item}: ${quantity} x ${prices[item].toFixed(2)} €`);
+                            }
+                        });
 
-                    paymentForm += `
-                        <div>
-                            <label>
-                                <input type="checkbox" id="pay-${selectedTable}-${p}" onchange="markPaid(${selectedTable}, ${p})">
-                                Person ${p} - Gesamt: ${personTotal.toFixed(2)} € 
-                                <span style="font-style: italic; color: #555;">(Bestellung: ${orderDetails.join(", ")})</span>
-                            </label>
-                        </div>`;
-                    totalBill += personTotal;
+                        paymentForm += `
+                            <div>
+                                <label>
+                                    <input type="checkbox" id="pay-${table}-${p}" onchange="markPaid(${table}, ${p})">
+                                    Person ${p} - Gesamt: ${personTotal.toFixed(2)} € 
+                                    <span style="font-style: italic; color: #555;">(Bestellung: ${orderDetails.join(", ")})</span>
+                                </label>
+                            </div>`;
+                        totalBill += personTotal;
+                    }
                 }
-            }
 
-            billDiv.innerHTML = paymentForm;
-            billDiv.innerHTML += `<hr><b>Gesamtbetrag für Tisch ${selectedTable}: ${totalBill.toFixed(2)} €</b>`;
+                billDiv.innerHTML = paymentForm;
+                billDiv.innerHTML += `<hr><b>Gesamtbetrag für Tisch ${table}: ${totalBill.toFixed(2)} €</b>`;
+            }
         }
 
         function markPaid(table, person) {
